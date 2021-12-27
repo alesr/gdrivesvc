@@ -29,7 +29,7 @@ func New(ctx context.Context, client *http.Client) *Service {
 	return &Service{srv}
 }
 
-func (s *Service) UploadFile(f *os.File, meta FileMeta, doneCh chan struct{}, errCh chan error) {
+func (s *Service) UploadFile(f *os.File, meta FileMeta, uploadedChan chan string, errCh chan error) {
 	if _, err := s.Files.Create(&drive.File{
 		Name:     meta.Name,
 		MimeType: meta.MimeType,
@@ -37,5 +37,6 @@ func (s *Service) UploadFile(f *os.File, meta FileMeta, doneCh chan struct{}, er
 	}).Media(f).Do(); err != nil {
 		errCh <- fmt.Errorf("could not create file '%s': %s", meta.Name, err)
 	}
-	doneCh <- struct{}{}
+
+	uploadedChan <- meta.Name
 }
